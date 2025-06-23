@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>間違い探し粛清ソリューション</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      /* 簡単なスタイルをここにも書いておきます */
+      body {
+        font-family: sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      h1 {
+        color: #333;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+      }
+      .upload-form,
+      .result-area {
+        flex: 1;
+      }
+      img {
+        max-width: 100%;
+        border: 1px solid #ddd;
+      }
+      #loading {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>間違い探し粛清ソリューション (MVP)</h1>
+    <p>2枚の「間違い探し」の画像をアップロードしてください。</p>
+
+    <div class="container">
+      <div class="upload-form">
+        <form id="compareForm" enctype="multipart/form-data">
+          <div>
+            <label for="image1">画像1:</label>
+            <input
+              type="file"
+              id="image1"
+              name="image1"
+              accept="image/*"
+              required
+            />
+          </div>
+          <br />
+          <div>
+            <label for="image2">画像2:</label>
+            <input
+              type="file"
+              id="image2"
+              name="image2"
+              accept="image/*"
+              required
+            />
+          </div>
+          <br />
+          <button type="submit">比較実行</button>
+        </form>
+      </div>
+
+      <div class="result-area">
+        <h2>結果</h2>
+        <div id="loading">処理中...</div>
+        <div id="result">
+          <p>ここに結果画像が表示されます。</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // フォームが送信されたときの処理
+      document
+        .getElementById("compareForm")
+        .addEventListener("submit", async function (event) {
+          // デフォルトのフォーム送信をキャンセル
+          event.preventDefault();
+
+          const form = event.target;
+          const formData = new FormData(form);
+
+          const loading = document.getElementById("loading");
+          const resultDiv = document.getElementById("result");
+
+          // 「処理中...」を表示
+          loading.style.display = "block";
+          resultDiv.innerHTML = "<p>ここに結果画像が表示されます。</p>";
+
+          try {
+            // app.py の /compare エンドポイントにデータを送信
+            const response = await fetch("/compare", {
+              method: "POST",
+              body: formData,
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              // 成功したら結果画像を表示
+              resultDiv.innerHTML = `<img src="${data.result_image}" alt="比較結果">`;
+            } else {
+              // エラーメッセージを表示
+              resultDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
+            }
+          } catch (error) {
+            resultDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました: ${error}</p>`;
+          } finally {
+            // 「処理中...」を非表示
+            loading.style.display = "none";
+          }
+        });
+    </script>
+  </body>
+</html>
