@@ -42,7 +42,7 @@ def compare_images(img_path1, img_path2):
 
     # --- 2. 特徴点のマッチングによる位置合わせ ---
     try:
-        # (省略: この部分は変更ありません)
+        
         orb = cv2.ORB_create(nfeatures=ORB_FEATURES)
         kp1, des1 = orb.detectAndCompute(img1_gray, None)
         kp2, des2 = orb.detectAndCompute(img2_gray, None)
@@ -72,7 +72,7 @@ def compare_images(img_path1, img_path2):
         img_to_compare2 = cv2.resize(img2_orig, (width, height))
 
     # --- 3. 位置合わせ後の画像で差分を検出 ---
-    # (省略: この部分は変更ありません)
+    
     gray1 = cv2.cvtColor(img_to_compare1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img_to_compare2, cv2.COLOR_BGR2GRAY)
     blur_gray1 = cv2.GaussianBlur(gray1, (5, 5), 0)
@@ -86,7 +86,7 @@ def compare_images(img_path1, img_path2):
     _ , thresh_color = cv2.threshold(diff_color_sum, DIFF_THRESHOLD + 20, 255, cv2.THRESH_BINARY)
     thresh = cv2.bitwise_or(thresh_gray, thresh_color)
 
-    # ★★★ ここが重要な変更点 ★★★
+    
     # 1. オープニング処理でノイズを除去
     kernel = np.ones((OPENING_KERNEL_SIZE, OPENING_KERNEL_SIZE), np.uint8)
     processed_mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=OPENING_ITERATIONS)

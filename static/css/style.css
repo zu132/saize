@@ -1,0 +1,189 @@
+body {
+  font-family: "Noto Sans JP", sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+header,
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+header {
+  border-bottom: 3px solid #4a90e2;
+}
+
+footer {
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+h1,
+h2 {
+  color: #4a90e2;
+}
+
+h1 {
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.upload-container,
+.result-container {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.image-upload-wrapper {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.image-upload-box {
+  flex: 1;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  height: 250px;
+  /* 内部の要素を中央に配置するために追加 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-box:hover {
+  border-color: #4a90e2;
+}
+
+.image-upload-box input[type="file"] {
+  display: none;
+}
+
+.image-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  text-align: center;
+}
+
+.image-upload-label img {
+  width: 100%;
+  height: 100%;
+  /* 変更点：画像をコンテナに収めるように変更 */
+  object-fit: contain;
+  display: block;
+}
+
+.image-upload-label span {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  transition: opacity 0.3s;
+}
+
+.image-upload-box:hover .image-upload-label span {
+  opacity: 0.8;
+}
+
+.submit-btn {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  background-color: #4a90e2;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #357abd;
+}
+
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4a90e2;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.result-area {
+  text-align: center;
+}
+
+.result-area img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-top: 1rem;
+}
+
+.error-message {
+  color: #d9534f;
+  background-color: #f2dede;
+  border: 1px solid #ebccd1;
+  padding: 1rem;
+  border-radius: 8px;
+}
