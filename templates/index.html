@@ -6,134 +6,301 @@
     <title>間違い探し粛清ソリューション</title>
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap"
-    />
-    <link
-      rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* モーダル用のスタイルを追加 */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 800px;
+        text-align: center;
+      }
+      #cropping-image {
+        max-width: 100%;
+      }
+      #camera-modal-content video {
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <h1>間違い探し粛清ソリューション (MVP)</h1>
-      <p>2枚の「間違い探し」の画像をアップロードして、違いを見つけましょう。</p>
+      <h1>間違い探し粛清ソリューション (v2)</h1>
+      <p>
+        2枚の画像を「アップロード」または「カメラで撮影」して、違いを見つけましょう。
+      </p>
     </header>
 
     <main class="container">
-      <div class="upload-container">
-        <form id="compareForm" enctype="multipart/form-data">
-          <div class="image-upload-wrapper">
-            <div class="image-upload-box" id="image-box-1">
-              <input
-                type="file"
-                id="image1"
-                name="image1"
-                accept="image/*"
-                required
-              />
-              <label for="image1" class="image-upload-label">
-                <img
-                  src="https://via.placeholder.com/300x200.png?text=画像1を選択"
-                  alt="画像1プレビュー"
-                  id="preview1"
-                />
-                <span>画像1をアップロード</span>
-              </label>
-            </div>
-            <div class="image-upload-box" id="image-box-2">
-              <input
-                type="file"
-                id="image2"
-                name="image2"
-                accept="image/*"
-                required
-              />
-              <label for="image2" class="image-upload-label">
-                <img
-                  src="https://via.placeholder.com/300x200.png?text=画像2を選択"
-                  alt="画像2プレビュー"
-                  id="preview2"
-                />
-                <span>画像2をアップロード</span>
-              </label>
-            </div>
+      <form id="compareForm">
+        <div class="image-upload-wrapper">
+          <div class="image-upload-box">
+            <h3>画像1</h3>
+            <img
+              id="preview1"
+              class="image-preview"
+              src="https://via.placeholder.com/300x200.png?text=画像1"
+              alt="画像1プレビュー"
+            />
+            <button
+              type="button"
+              class="btn-select"
+              data-target="1"
+              data-action="upload"
+            >
+              デバイスから選択
+            </button>
+            <button
+              type="button"
+              class="btn-select"
+              data-target="1"
+              data-action="camera"
+            >
+              カメラで撮影
+            </button>
+            <input type="hidden" name="image1_b64" id="image1_b64" />
           </div>
-          <button type="submit" class="submit-btn">比較実行</button>
-        </form>
-      </div>
+          <div class="image-upload-box">
+            <h3>画像2</h3>
+            <img
+              id="preview2"
+              class="image-preview"
+              src="https://via.placeholder.com/300x200.png?text=画像2"
+              alt="画像2プレビュー"
+            />
+            <button
+              type="button"
+              class="btn-select"
+              data-target="2"
+              data-action="upload"
+            >
+              デバイスから選択
+            </button>
+            <button
+              type="button"
+              class="btn-select"
+              data-target="2"
+              data-action="camera"
+            >
+              カメラで撮影
+            </button>
+            <input type="hidden" name="image2_b64" id="image2_b64" />
+          </div>
+        </div>
+        <button type="submit" class="submit-btn">比較実行</button>
+      </form>
 
       <div class="result-container">
         <h2>実行結果</h2>
-        <div id="loading" class="loading-indicator" style="display: none">
-          <div class="spinner"></div>
-          <p>処理中です...</p>
-        </div>
-        <div id="result" class="result-area">
-          <p>ここに結果画像が表示されます。</p>
-        </div>
+        <div id="loading" style="display: none"><p>処理中です...</p></div>
+        <div id="result"></div>
       </div>
     </main>
 
-    <footer>
-      <p>&copy; 2024 間違い探し粛清ソリューション</p>
-    </footer>
+    <div id="cropping-modal" class="modal">
+      <div class="modal-content">
+        <h2>画像をトリミング</h2>
+        <div>
+          <img id="cropping-image" src="" />
+        </div>
+        <button type="button" id="crop-btn">トリミング確定</button>
+      </div>
+    </div>
 
+    <div id="camera-modal" class="modal">
+      <div class="modal-content" id="camera-modal-content">
+        <h2>カメラで撮影</h2>
+        <video id="camera-feed" autoplay></video>
+        <button type="button" id="shutter-btn">撮影する</button>
+        <canvas id="camera-canvas" style="display: none"></canvas>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
-      document
-        .getElementById("image1")
-        .addEventListener("change", function (event) {
-          const preview = document.getElementById("preview1");
-          const file = event.target.files[0];
-          if (file) {
-            preview.src = URL.createObjectURL(file);
-          }
-        });
+      document.addEventListener("DOMContentLoaded", () => {
+        // 【2-1. グローバル変数とDOM要素の取得】
+        let cropper;
+        let currentTargetIndex; // '1' or '2'
+        let image1AspectRatio; // 画像1のアスペクト比を保持する変数
 
-      document
-        .getElementById("image2")
-        .addEventListener("change", function (event) {
-          const preview = document.getElementById("preview2");
-          const file = event.target.files[0];
-          if (file) {
-            preview.src = URL.createObjectURL(file);
-          }
-        });
+        // ファイル入力用の隠しinput要素
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*";
 
-      document
-        .getElementById("compareForm")
-        .addEventListener("submit", async function (event) {
-          event.preventDefault();
+        // DOM要素
+        const croppingModal = document.getElementById("cropping-modal");
+        const cameraModal = document.getElementById("camera-modal");
+        const cropBtn = document.getElementById("crop-btn");
+        const shutterBtn = document.getElementById("shutter-btn");
+        const video = document.getElementById("camera-feed");
+        const canvas = document.getElementById("camera-canvas");
 
-          const form = event.target;
-          const formData = new FormData(form);
-          const loading = document.getElementById("loading");
-          const resultDiv = document.getElementById("result");
-
-          loading.style.display = "flex";
-          resultDiv.innerHTML = "<p>ここに結果画像が表示されます。</p>";
-          resultDiv.style.display = "none";
-
-          try {
-            const response = await fetch("/compare", {
-              method: "POST",
-              body: formData,
-            });
-
-            const data = await response.json();
-            resultDiv.style.display = "block";
-
-            if (response.ok) {
-              resultDiv.innerHTML = `<img src="${data.result_image}" alt="比較結果">`;
-            } else {
-              resultDiv.innerHTML = `<p class="error-message">エラー: ${data.error}</p>`;
+        // 【2-2. イベントリスナーの設定】
+        // 「デバイスから選択」「カメラで撮影」ボタンの処理
+        document.querySelectorAll(".btn-select").forEach((button) => {
+          button.addEventListener("click", (e) => {
+            currentTargetIndex = e.target.dataset.target;
+            const action = e.target.dataset.action;
+            if (action === "upload") {
+              fileInput.click();
+            } else if (action === "camera") {
+              startCamera();
             }
-          } catch (error) {
-            resultDiv.style.display = "block";
-            resultDiv.innerHTML = `<p class="error-message">通信エラーが発生しました: ${error}</p>`;
-          } finally {
-            loading.style.display = "none";
-          }
+          });
         });
+
+        // ファイルが選択された時の処理
+        fileInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              showCroppingModal(event.target.result);
+            };
+            reader.readAsDataURL(file);
+          }
+          fileInput.value = ""; // 同じファイルを連続で選択できるようにリセット
+        });
+
+        // カメラ撮影ボタンの処理
+        shutterBtn.addEventListener("click", () => {
+          const context = canvas.getContext("2d");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageDataUrl = canvas.toDataURL("image/jpeg");
+          stopCamera();
+          showCroppingModal(imageDataUrl);
+        });
+
+        // トリミング確定ボタンの処理
+        cropBtn.addEventListener("click", () => {
+          if (!cropper) return;
+
+          const croppedCanvas = cropper.getCroppedCanvas();
+          const croppedImageDataUrl = croppedCanvas.toDataURL("image/png");
+
+          // プレビューと隠しフィールドに設定
+          document.getElementById(`preview${currentTargetIndex}`).src =
+            croppedImageDataUrl;
+          document.getElementById(`image${currentTargetIndex}_b64`).value =
+            croppedImageDataUrl;
+
+          // 画像1ならアスペクト比を保存
+          if (currentTargetIndex === "1") {
+            const cropData = cropper.getData();
+            image1AspectRatio = cropData.width / cropData.height;
+          }
+
+          croppingModal.style.display = "none";
+          cropper.destroy();
+        });
+
+        // フォーム送信処理
+        document
+          .getElementById("compareForm")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const image1_b64 = document.getElementById("image1_b64").value;
+            const image2_b64 = document.getElementById("image2_b64").value;
+
+            if (!image1_b64 || !image2_b64) {
+              alert("画像1と画像2の両方を選択してください。");
+              return;
+            }
+
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("result").innerHTML = "";
+
+            try {
+              const response = await fetch("/compare", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image1_b64, image2_b64 }),
+              });
+              const data = await response.json();
+              if (data.result_image) {
+                document.getElementById(
+                  "result"
+                ).innerHTML = `<img src="${data.result_image}" alt="比較結果">`;
+              } else {
+                document.getElementById(
+                  "result"
+                ).innerHTML = `<p>エラー: ${data.error}</p>`;
+              }
+            } catch (error) {
+              document.getElementById(
+                "result"
+              ).innerHTML = `<p>通信エラーが発生しました。</p>`;
+            } finally {
+              document.getElementById("loading").style.display = "none";
+            }
+          });
+
+        // 【2-3. 各種制御関数】
+        function startCamera() {
+          navigator.mediaDevices
+            .getUserMedia({ video: true, audio: false })
+            .then((stream) => {
+              video.srcObject = stream;
+              cameraModal.style.display = "flex";
+            })
+            .catch((err) => alert("カメラへのアクセスに失敗しました。"));
+        }
+
+        function stopCamera() {
+          if (video.srcObject) {
+            video.srcObject.getTracks().forEach((track) => track.stop());
+          }
+          cameraModal.style.display = "none";
+        }
+
+        function showCroppingModal(imageDataUrl) {
+          const image = document.getElementById("cropping-image");
+          image.src = imageDataUrl;
+          croppingModal.style.display = "flex";
+
+          // Cropper.jsのオプションを設定
+          let cropperOptions = {
+            viewMode: 1,
+            background: false,
+          };
+
+          // 画像2の時、かつ画像1のアスペクト比が保存されている場合
+          if (currentTargetIndex === "2" && image1AspectRatio) {
+            cropperOptions.aspectRatio = image1AspectRatio;
+          } else {
+            cropperOptions.aspectRatio = NaN; // 自由な比率
+          }
+
+          if (cropper) {
+            cropper.destroy();
+          }
+          cropper = new Cropper(image, cropperOptions);
+        }
+      });
     </script>
   </body>
 </html>

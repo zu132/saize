@@ -1,4 +1,6 @@
+import base64
 import os
+import uuid # ファイル名生成用
 from flask import Flask, request, render_template, jsonify
 import cv2
 import numpy as np
@@ -134,30 +136,78 @@ def index():
     # index.html を表示する
     return render_template('index.html')
 
-# '/compare' に画像がPOSTされた場合
+# # '/compare' に画像がPOSTされた場合
+# @app.route('/compare', methods=['POST'])
+
+
+
+# 画像を一時的に保存する関数（新規作成またはリファクタ）
+def save_b64_image(b64_string, upload_folder):
+    """Base64文字列を受け取り、画像ファイルとして保存する"""
+    try:
+        # ヘッダー部分(e.g., "data:image/png;base64,")を分離
+        header, encoded = b64_string.split(",", 1)
+        data = base64.b64decode(encoded)
+        
+        # 拡張子を決定
+        file_extension = header.split(';')[0].split('/')[1]
+        if file_extension not in ['png', 'jpeg', 'jpg']:
+            file_extension = 'png' # 不明な場合はpngに
+
+        # ユニークなファイル名を生成
+        file_name = f"{uuid.uuid4()}.{file_extension}"
+        file_path = os.path.join(upload_folder, file_name)
+
+        with open(file_path, "wb") as f:
+            f.write(data)
+            
+        return file_path
+    except Exception as e:
+        print(f"Error saving b64 image: {e}")
+        return None
+
+# 'compare'関数をこの内容に差し替えてください
+
 @app.route('/compare', methods=['POST'])
 def compare():
-    # ファイルが2つ送られてきているかチェック
-    if 'image1' not in request.files or 'image2' not in request.files:
-        return jsonify({'error': '画像が2枚アップロードされていません'}), 400
+    if request.method == 'POST':
+        data = request.get_json()
+        image1_b64 = data.get('image1_b64')
+        image2_b64 = data.get('image2_b64')
 
-    file1 = request.files['image1']
-    file2 = request.files['image2']
+        if not image1_b64 or not image2_b64:
+            return jsonify({'error': '画像データが見つかりません'}), 400
 
-    # ファイル名を取得して保存
-    path1 = os.path.join(app.config['UPLOAD_FOLDER'], file1.filename)
-    path2 = os.path.join(app.config['UPLOAD_FOLDER'], file2.filename)
-    file1.save(path1)
-    file2.save(path2)
-    
-    # 画像比較関数を呼び出す
-    try:
-        result_image_name = compare_images(path1, path2)
-        # 成功したら結果画像のURLを返す
-        return jsonify({'result_image': f'/{UPLOAD_FOLDER}/{result_image_name}'})
-    except Exception as e:
-        return jsonify({'error': f'処理中にエラーが発生しました: {e}'}), 500
+        upload_folder = app.config['UPLOAD_FOLDER']
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+            
+        # Base64を一時ファイルとして保存
+        temp_image_path1 = save_b64_image(image1_b64, upload_folder)
+        temp_image_path2 = save_b64_image(image2_b64, upload_folder)
+        
+        if not temp_image_path1 or not temp_image_path2:
+            return jsonify({'error': '画像の保存に失敗しました'}), 500
 
+        # 既存の比較処理を呼び出し、返り値は「ファイル名」であることを明確にする
+        result_filename = compare_images(temp_image_path1, temp_image_path2)
+        
+        # 一時ファイルを削除
+        if os.path.exists(temp_image_path1):
+            os.remove(temp_image_path1)
+        if os.path.exists(temp_image_path2):
+            os.remove(temp_image_path2)
+
+        if result_filename:
+            # ★★★ ここが最も重要な修正点 ★★★
+            # 返された「ファイル名」を使って、フロントエンド用の正しいURLを組み立てる
+            final_image_url = f"/{upload_folder}/{result_filename}"
+            print(f"フロントエンドに返す画像のURL: {final_image_url}") # デバッグ用にURLをコンソールに表示
+            return jsonify({'result_image': final_image_url})
+        else:
+            return jsonify({'error': '比較処理中にエラーが発生しました'}), 500
+
+    return jsonify({'error': '不正なリクエストです'}), 400
 # Pythonスクリプトとして直接実行された場合にサーバーを起動
 if __name__ == '__main__':
     app.run(debug=True)
