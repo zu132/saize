@@ -53,56 +53,64 @@
     <main class="container">
       <form id="compareForm">
         <div class="image-upload-wrapper">
-          <div class="image-upload-box">
+          <div class="image-input-container">
             <h3>画像1</h3>
-            <img
-              id="preview1"
-              class="image-preview"
-              src="https://via.placeholder.com/300x200.png?text=画像1"
-              alt="画像1プレビュー"
-            />
-            <button
-              type="button"
-              class="btn-select"
-              data-target="1"
-              data-action="upload"
-            >
-              デバイスから選択
-            </button>
-            <button
-              type="button"
-              class="btn-select"
-              data-target="1"
-              data-action="camera"
-            >
-              カメラで撮影
-            </button>
+            <div class="image-preview-box">
+              <img
+                id="preview1"
+                class="image-preview"
+                src="https://via.placeholder.com/300x200.png?text=画像1"
+                alt="画像1プレビュー"
+              />
+            </div>
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="btn-select"
+                data-target="1"
+                data-action="upload"
+              >
+                デバイスから選択
+              </button>
+              <button
+                type="button"
+                class="btn-select"
+                data-target="1"
+                data-action="camera"
+              >
+                カメラで撮影
+              </button>
+            </div>
             <input type="hidden" name="image1_b64" id="image1_b64" />
           </div>
-          <div class="image-upload-box">
+          <div class="image-input-container">
             <h3>画像2</h3>
-            <img
-              id="preview2"
-              class="image-preview"
-              src="https://via.placeholder.com/300x200.png?text=画像2"
-              alt="画像2プレビュー"
-            />
-            <button
-              type="button"
-              class="btn-select"
-              data-target="2"
-              data-action="upload"
-            >
-              デバイスから選択
-            </button>
-            <button
-              type="button"
-              class="btn-select"
-              data-target="2"
-              data-action="camera"
-            >
-              カメラで撮影
-            </button>
+            <div class="image-preview-box">
+              <img
+                id="preview2"
+                class="image-preview"
+                src="https://via.placeholder.com/300x200.png?text=画像2"
+                alt="画像2プレビュー"
+              />
+            </div>
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="btn-select"
+                data-target="2"
+                data-action="upload"
+              >
+                デバイスから選択
+              </button>
+              <button
+                type="button"
+                class="btn-select"
+                data-target="2"
+                data-action="camera"
+              >
+                カメラで撮影
+              </button>
+            </div>
             <input type="hidden" name="image2_b64" id="image2_b64" />
           </div>
         </div>

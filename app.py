@@ -166,7 +166,6 @@ def save_b64_image(b64_string, upload_folder):
         print(f"Error saving b64 image: {e}")
         return None
 
-# 'compare'関数をこの内容に差し替えてください
 
 @app.route('/compare', methods=['POST'])
 def compare():
@@ -199,8 +198,8 @@ def compare():
             os.remove(temp_image_path2)
 
         if result_filename:
-            # ★★★ ここが最も重要な修正点 ★★★
-            # 返された「ファイル名」を使って、フロントエンド用の正しいURLを組み立てる
+            
+            # 返された「ファイル名」を使って、フロントエンド用のURLを組み立てる
             final_image_url = f"/{upload_folder}/{result_filename}"
             print(f"フロントエンドに返す画像のURL: {final_image_url}") # デバッグ用にURLをコンソールに表示
             return jsonify({'result_image': final_image_url})
