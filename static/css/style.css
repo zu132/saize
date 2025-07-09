@@ -144,11 +144,11 @@ h2 {
   }
 }
 
-#result-area {
+.result-area {
   width: 100%;
 }
 
-#result-area img {
+.result-area img {
   display: block; /* ブロック要素として扱う */
   margin: 1rem auto; /* 上下マージン1rem、左右は自動で中央に */
 
