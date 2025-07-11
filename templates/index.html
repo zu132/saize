@@ -21,24 +21,49 @@
         left: 0;
         top: 0;
         width: 100%;
-        height: 100%;
-        overflow: auto;
+        height: 100vh;
+        overflow: hidden;
         background-color: rgba(0, 0, 0, 0.6);
       }
       .modal-content {
         background-color: #fefefe;
-        margin: 5% auto;
+        margin: 2vh auto;
         padding: 20px;
         border: 1px solid #888;
-        width: 80%;
-        max-width: 800px;
+        width: 90%;
+        max-width: 1200px;
+        max-height: 90vh;
         text-align: center;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       #cropping-image {
         max-width: 100%;
+        max-height: 65vh;
+        width: auto;
+        height: auto;
+        object-fit: contain;
       }
       #camera-modal-content video {
-        width: 100%;
+        max-width: 100%;
+        max-height: 65vh;
+        object-fit: contain;
+      }
+      .modal-content button {
+        margin-top: 15px;
+        padding: 8px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+      .modal-content button:hover {
+        background-color: #357abd;
       }
     </style>
   </head>
@@ -70,7 +95,7 @@
                 data-target="1"
                 data-action="upload"
               >
-                アップロードする
+                デバイスから選択
               </button>
               <button
                 type="button"
@@ -78,7 +103,7 @@
                 data-target="1"
                 data-action="camera"
               >
-                カメラで撮る
+                カメラで撮影
               </button>
             </div>
             <input type="hidden" name="image1_b64" id="image1_b64" />
@@ -100,7 +125,7 @@
                 data-target="2"
                 data-action="upload"
               >
-                アップロードする
+                デバイスから選択
               </button>
               <button
                 type="button"
@@ -108,17 +133,17 @@
                 data-target="2"
                 data-action="camera"
               >
-                カメラで撮る
+                カメラで撮影
               </button>
             </div>
             <input type="hidden" name="image2_b64" id="image2_b64" />
           </div>
         </div>
-        <button type="submit" class="submit-btn">まちがいをさがす！</button>
+        <button type="submit" class="submit-btn">比較実行</button>
       </form>
 
       <div class="result-container">
-        <h2>間違いを囲みました⭕</h2>
+        <h2>実行結果</h2>
         <div id="loading" style="display: none"><p>処理中です...</p></div>
         <div id="result"></div>
       </div>
@@ -250,9 +275,27 @@
               });
               const data = await response.json();
               if (data.result_image) {
-                document.getElementById(
-                  "result"
-                ).innerHTML = `<div class="result-area"><img src="${data.result_image}" alt="比較結果"></div>`;
+                document.getElementById("result").innerHTML = `
+                  <div class="result-area">
+                    <div class="original-images">
+                      <div class="original-image">
+                        <h3>画像1</h3>
+                        <img src="${
+                          document.getElementById("preview1").src
+                        }" alt="画像1">
+                      </div>
+                      <div class="original-image">
+                        <h3>画像2</h3>
+                        <img src="${
+                          document.getElementById("preview2").src
+                        }" alt="画像2">
+                      </div>
+                    </div>
+                    <div class="diff-image">
+                      <h3>検出結果</h3>
+                      <img src="${data.result_image}" alt="比較結果">
+                    </div>
+                  </div>`;
               } else {
                 document.getElementById(
                   "result"
