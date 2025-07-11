@@ -136,7 +136,7 @@ def index():
     # index.html を表示する
     return render_template('index.html')
 
-# # '/compare' に画像がPOSTされた場合
+# '/compare' に画像がPOSTされた場合
 # @app.route('/compare', methods=['POST'])
 
 
