@@ -146,6 +146,8 @@ h2 {
 
 .result-area {
   width: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .result-area img {
