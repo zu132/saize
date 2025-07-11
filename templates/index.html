@@ -27,18 +27,44 @@
       }
       .modal-content {
         background-color: #fefefe;
-        margin: 5% auto;
+        margin: 2% auto;
         padding: 20px;
         border: 1px solid #888;
-        width: 80%;
-        max-width: 800px;
+        width: 90%;
+        max-width: 1000px;
         text-align: center;
+        max-height: 90vh;
+        overflow-y: auto;
       }
       #cropping-image {
         max-width: 100%;
+        max-height: 70vh; /* 画面の70%の高さまでに制限 */
+        object-fit: contain; /* アスペクト比を保持 */
       }
       #camera-modal-content video {
         width: 100%;
+      }
+      .modal-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 1rem;
+      }
+      .modal-buttons button {
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+      #shutter-btn {
+        background-color: #4a90e2;
+        color: white;
+        border-color: #357abd;
+      }
+      #cancel-camera-btn {
+        background-color: #fff;
+        color: #666;
       }
     </style>
   </head>
@@ -117,8 +143,13 @@
         <button type="submit" class="submit-btn">比較実行</button>
       </form>
 
+<<<<<<< Updated upstream
       <div class="result-container">
         <h2>実行結果</h2>
+=======
+      <div id="result-container" class="result-container" style="display: none">
+        <h2>間違いを囲みました⭕</h2>
+>>>>>>> Stashed changes
         <div id="loading" style="display: none"><p>処理中です...</p></div>
         <div id="result"></div>
       </div>
@@ -130,7 +161,12 @@
         <div>
           <img id="cropping-image" src="" />
         </div>
-        <button type="button" id="crop-btn">トリミング確定</button>
+        <div class="modal-buttons">
+          <button type="button" id="retake-btn" style="display: none">
+            撮り直す
+          </button>
+          <button type="button" id="crop-btn">トリミング確定</button>
+        </div>
       </div>
     </div>
 
@@ -138,7 +174,10 @@
       <div class="modal-content" id="camera-modal-content">
         <h2>カメラで撮影</h2>
         <video id="camera-feed" autoplay></video>
-        <button type="button" id="shutter-btn">撮影する</button>
+        <div class="modal-buttons">
+          <button type="button" id="cancel-camera-btn">キャンセル</button>
+          <button type="button" id="shutter-btn">撮影する</button>
+        </div>
         <canvas id="camera-canvas" style="display: none"></canvas>
       </div>
     </div>
@@ -160,7 +199,9 @@
         const croppingModal = document.getElementById("cropping-modal");
         const cameraModal = document.getElementById("camera-modal");
         const cropBtn = document.getElementById("crop-btn");
+        const retakeBtn = document.getElementById("retake-btn");
         const shutterBtn = document.getElementById("shutter-btn");
+        const cancelCameraBtn = document.getElementById("cancel-camera-btn");
         const video = document.getElementById("camera-feed");
         const canvas = document.getElementById("camera-canvas");
 
@@ -191,6 +232,20 @@
           fileInput.value = ""; // 同じファイルを連続で選択できるようにリセット
         });
 
+        // カメラのキャンセルボタンの処理
+        cancelCameraBtn.addEventListener("click", () => {
+          stopCamera();
+        });
+
+        // 撮り直すボタンの処理
+        retakeBtn.addEventListener("click", () => {
+          croppingModal.style.display = "none";
+          if (cropper) {
+            cropper.destroy();
+          }
+          startCamera();
+        });
+
         // カメラ撮影ボタンの処理
         shutterBtn.addEventListener("click", () => {
           const context = canvas.getContext("2d");
@@ -199,7 +254,7 @@
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageDataUrl = canvas.toDataURL("image/jpeg");
           stopCamera();
-          showCroppingModal(imageDataUrl);
+          showCroppingModal(imageDataUrl, true);
         });
 
         // トリミング確定ボタンの処理
@@ -249,6 +304,12 @@
                 body: JSON.stringify({ image1_b64, image2_b64 }),
               });
               const data = await response.json();
+
+              // 結果コンテナを表示
+              const resultContainer =
+                document.getElementById("result-container");
+              resultContainer.style.display = "block";
+
               if (data.result_image) {
                 document.getElementById(
                   "result"
@@ -285,10 +346,12 @@
           cameraModal.style.display = "none";
         }
 
-        function showCroppingModal(imageDataUrl) {
+        function showCroppingModal(imageDataUrl, isFromCamera = false) {
           const image = document.getElementById("cropping-image");
           image.src = imageDataUrl;
           croppingModal.style.display = "flex";
+          // カメラからの場合のみ撮り直すボタンを表示
+          retakeBtn.style.display = isFromCamera ? "inline-block" : "none";
 
           // Cropper.jsのオプションを設定
           let cropperOptions = {
