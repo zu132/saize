@@ -213,3 +213,41 @@ h2 {
 .btn-select:hover {
   background-color: #f0f0f0;
 }
+
+.result-area {
+  width: 100%;
+}
+
+.original-images {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.original-image {
+  flex: 1;
+  text-align: center;
+}
+
+.original-image h3,
+.diff-image h3 {
+  margin-bottom: 1rem;
+  color: #4a90e2;
+}
+
+.original-image img,
+.diff-image img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.diff-image {
+  margin-top: 2rem;
+  text-align: center;
+}

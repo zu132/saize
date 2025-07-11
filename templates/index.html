@@ -21,8 +21,8 @@
         left: 0;
         top: 0;
         width: 100%;
-        height: 100%;
-        overflow: auto;
+        height: 100vh;
+        overflow: hidden;
         background-color: rgba(0, 0, 0, 0.6);
       }
       .modal-content {
@@ -47,7 +47,23 @@
         object-fit: contain;
       }
       #camera-modal-content video {
-        width: 100%;
+        max-width: 100%;
+        max-height: 65vh;
+        object-fit: contain;
+      }
+      .modal-content button {
+        margin-top: 15px;
+        padding: 8px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        background-color: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+      .modal-content button:hover {
+        background-color: #357abd;
       }
       .modal-buttons {
         display: flex;
@@ -311,9 +327,27 @@
               resultContainer.style.display = "block";
 
               if (data.result_image) {
-                document.getElementById(
-                  "result"
-                ).innerHTML = `<img src="${data.result_image}" alt="比較結果">`;
+                document.getElementById("result").innerHTML = `
+                  <div class="result-area">
+                    <div class="original-images">
+                      <div class="original-image">
+                        <h3>画像1</h3>
+                        <img src="${
+                          document.getElementById("preview1").src
+                        }" alt="画像1">
+                      </div>
+                      <div class="original-image">
+                        <h3>画像2</h3>
+                        <img src="${
+                          document.getElementById("preview2").src
+                        }" alt="画像2">
+                      </div>
+                    </div>
+                    <div class="diff-image">
+                      <h3>検出結果</h3>
+                      <img src="${data.result_image}" alt="比較結果">
+                    </div>
+                  </div>`;
               } else {
                 document.getElementById(
                   "result"
