@@ -12,7 +12,6 @@ app = Flask(__name__)
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# compare_images 関数全体をこちらに置き換えてください
 def compare_images(img_path1, img_path2):
     # --- パラメータ設定 ---
     # ★ オープニング後に軽く膨張させるかどうかのスイッチ
