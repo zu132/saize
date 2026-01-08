@@ -87,6 +87,75 @@
         background-color: #fff;
         color: #666;
       }
+
+      /* レスポンシブ対応 */
+      @media (max-width: 600px) {
+        header h1 {
+          font-size: 1.8rem;
+        }
+        header p {
+          font-size: 1rem;
+        }
+        .image-upload-wrapper {
+          flex-direction: column;
+          align-items: center;
+        }
+        .image-input-container {
+          margin-bottom: 2rem;
+          width: 100%;
+        }
+        .image-preview-box {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          height: 200px;
+        }
+        .image-preview {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+        .modal-content {
+          width: 95%;
+          padding: 10px;
+        }
+        .modal-content button {
+          padding: 6px 15px;
+          font-size: 0.9rem;
+        }
+        .modal-buttons {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+        #camera-modal-content video {
+          max-height: 50vh;
+        }
+        #cropping-image {
+          max-height: 50vh;
+        }
+      }
+
+      /* 結果表示用スタイル */
+      .result-display-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 1rem;
+      }
+      .result-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .result-column img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      .result-final img {
+        border-color: #4a90e2;
+      }
     </style>
   </head>
   <body>
@@ -328,24 +397,16 @@
 
               if (data.result_image) {
                 document.getElementById("result").innerHTML = `
-                  <div class="result-area">
-                    <div class="original-images">
-                      <div class="original-image">
-                        <h3>画像1</h3>
-                        <img src="${
-                          document.getElementById("preview1").src
-                        }" alt="画像1">
-                      </div>
-                      <div class="original-image">
-                        <h3>画像2</h3>
-                        <img src="${
-                          document.getElementById("preview2").src
-                        }" alt="画像2">
-                      </div>
-                    </div>
-                    <div class="diff-image">
-                      <h3>検出結果</h3>
+                  <div class="result-display-grid">
+                    <div class="result-column result-final">
+                      <h3>検出結果（左：画像1ベース）</h3>
                       <img src="${data.result_image}" alt="比較結果">
+                    </div>
+                    <div class="result-column">
+                      <h3>画像2（右）</h3>
+                      <img src="${
+                        document.getElementById("preview2").src
+                      }" alt="画像2">
                     </div>
                   </div>`;
               } else {

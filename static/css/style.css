@@ -251,3 +251,81 @@ h2 {
   margin-top: 2rem;
   text-align: center;
 }
+
+/* --- 2枚横並びレイアウトの設定 --- */
+.result-display-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px; /* 画像の間の余白 */
+  width: 100%;
+  max-width: 1200px; /* 広がりすぎ防止 */
+  margin: 1.5rem auto;
+  box-sizing: border-box;
+}
+
+.result-column {
+  flex: 1;
+  min-width: 0; /* はみ出し防止の必須設定 */
+  text-align: center;
+}
+
+.result-column h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #4a90e2;
+}
+
+.result-column img {
+  width: 100%; /* 枠の幅に合わせる */
+  height: auto; /* 比率を維持 */
+  display: block;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  object-fit: contain;
+}
+
+/* 検出結果（左側）のタイトルを強調 */
+.result-final h3 {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+/* モバイル対応：画面が狭い場合は少し隙間を詰める */
+@media (max-width: 600px) {
+  .result-display-grid {
+    gap: 10px;
+  }
+  .result-column h3 {
+    font-size: 0.85rem;
+  }
+}
+
+/* スマホなど極端に画面が狭い場合でも横並びを維持する設定 */
+@media (max-width: 480px) {
+  .result-display-grid {
+    gap: 5px;
+  }
+  .result-column h3 {
+    font-size: 0.7rem;
+  }
+}
+
+/* --- レスポンシブ対応: スマホで縦並び --- */
+@media (max-width: 600px) {
+  .result-images-wrapper {
+    flex-direction: column; /* 縦並び */
+    gap: 20px; /* 縦方向の隙間を広げる */
+  }
+
+  .result-item h3 {
+    font-size: 1.2rem; /* タイトル文字を大きく */
+    margin-bottom: 10px;
+  }
+
+  .result-item img {
+    max-height: 40vh; /* スマホでの高さを調整 */
+  }
+}
