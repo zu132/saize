@@ -18,7 +18,7 @@ def compare_images(img_path1, img_path2):
     DILATE_AFTER_OPENING = True
 
     # モルフォロジー演算
-    OPENING_KERNEL_SIZE = 3 
+    OPENING_KERNEL_SIZE = 3
     OPENING_ITERATIONS = 1  # 弱めに設定
 
     # 面積フィルター
