@@ -324,11 +324,32 @@
         };
 
         function startCamera() {
-          navigator.mediaDevices.getUserMedia({ video: true }).then((s) => {
-            video.srcObject = s;
-            cameraModal.style.display = "flex";
-          });
+          // facingMode: "environment" を指定して背面カメラをリクエストする
+          navigator.mediaDevices
+            .getUserMedia({
+              video: { facingMode: "environment" },
+              audio: false,
+            })
+            .then((s) => {
+              video.srcObject = s;
+              cameraModal.style.display = "flex";
+            })
+            .catch((err) => {
+              // 背面カメラの指定が失敗した場合のフォールバック
+              console.warn(
+                "背面カメラの起動に失敗しました。デフォルト設定で再試行します。",
+                err
+              );
+              navigator.mediaDevices
+                .getUserMedia({ video: true })
+                .then((s) => {
+                  video.srcObject = s;
+                  cameraModal.style.display = "flex";
+                })
+                .catch((e) => alert("カメラへのアクセスに失敗しました: " + e));
+            });
         }
+
         function stopCamera() {
           if (video.srcObject)
             video.srcObject.getTracks().forEach((t) => t.stop());
