@@ -51,56 +51,54 @@ def auto_rectify(image):
     return image
 
 def compare_images(img_path1, img_path2, use_auto_crop=False):
+    """2枚の画像を比較して間違いを抽出する"""
+    # パラメータ設定
     DILATE_AFTER_OPENING = True
     OPENING_KERNEL_SIZE = 3
     OPENING_ITERATIONS = 1
     MIN_CONTOUR_AREA = 40
     ASPECT_RATIO_THRESHOLD = 8.0
     SOLIDITY_THRESHOLD = 0.35
-    MIN_MATCH_COUNT = 10
-    GOOD_MATCH_RATE = 0.7
-    ORB_FEATURES = 2000
-    RANSAC_REPROJ_THRESHOLD = 3.0
     DIFF_THRESHOLD = 30
 
     img1 = cv2.imread(img_path1)
     img2 = cv2.imread(img_path2)
 
+    # オートクロップの適用
     if use_auto_crop:
         img1 = auto_rectify(img1)
         img2 = auto_rectify(img2)
 
+    # 位置合わせ（ORBマッチング）
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-    img_to_compare1 = img1
-    img_to_compare2 = None
-
+    
     try:
-        orb = cv2.ORB_create(nfeatures=ORB_FEATURES)
+        orb = cv2.ORB_create(nfeatures=2000)
         kp1, des1 = orb.detectAndCompute(img1_gray, None)
         kp2, des2 = orb.detectAndCompute(img2_gray, None)
         bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
         matches = bf.match(des1, des2)
-        matches = sorted(matches, key=lambda x: x.distance)
-        good_matches = matches[:int(len(matches) * GOOD_MATCH_RATE)]
+        good_matches = sorted(matches, key=lambda x: x.distance)[:int(len(matches) * 0.7)]
 
-        if len(good_matches) > MIN_MATCH_COUNT:
+        if len(good_matches) > 10:
             src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
             dst_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
-            h_matrix, _ = cv2.findHomography(dst_pts, src_pts, cv2.RANSAC, RANSAC_REPROJ_THRESHOLD)
-            h, w = img1_gray.shape
-            img_to_compare2 = cv2.warpPerspective(img2, h_matrix, (w, h))
+            h_matrix, _ = cv2.findHomography(dst_pts, src_pts, cv2.RANSAC, 3.0)
+            img_to_compare2 = cv2.warpPerspective(img2, h_matrix, (img1_gray.shape[1], img1_gray.shape[0]))
         else:
             img_to_compare2 = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
     except:
         img_to_compare2 = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
 
-    gray1 = cv2.cvtColor(img_to_compare1, cv2.COLOR_BGR2GRAY)
+    # 差分判定ロジック
+    gray1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img_to_compare2, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(cv2.GaussianBlur(gray1, (5, 5), 0), cv2.GaussianBlur(gray2, (5, 5), 0))
     _, thresh = cv2.threshold(diff, DIFF_THRESHOLD, 255, cv2.THRESH_BINARY)
     
-    diff_c = cv2.absdiff(cv2.GaussianBlur(img_to_compare1, (5, 5), 0), cv2.GaussianBlur(img_to_compare2, (5, 5), 0))
+    # 彩度差分の考慮
+    diff_c = cv2.absdiff(cv2.GaussianBlur(img1, (5, 5), 0), cv2.GaussianBlur(img_to_compare2, (5, 5), 0))
     diff_c_sum = np.sum(diff_c, axis=2).astype('uint8')
     _, thresh_c = cv2.threshold(diff_c_sum, DIFF_THRESHOLD + 20, 255, cv2.THRESH_BINARY)
     
@@ -110,15 +108,15 @@ def compare_images(img_path1, img_path2, use_auto_crop=False):
     if DILATE_AFTER_OPENING:
         mask = cv2.dilate(mask, None, iterations=1)
 
+    # 輪郭抽出と枠の描画
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    result_img = img_to_compare1.copy()
+    result_img = img1.copy()
     for cnt in contours:
         area = cv2.contourArea(cnt)
         if area < MIN_CONTOUR_AREA: continue
         x, y, wb, hb = cv2.boundingRect(cnt)
         hull_area = cv2.contourArea(cv2.convexHull(cnt))
-        if hull_area == 0: continue
-        if not (1/ASPECT_RATIO_THRESHOLD < (wb/hb) < ASPECT_RATIO_THRESHOLD): continue
+        if hull_area == 0 or not (1/ASPECT_RATIO_THRESHOLD < (wb/hb) < ASPECT_RATIO_THRESHOLD): continue
         if (area / hull_area) < SOLIDITY_THRESHOLD: continue
         cv2.rectangle(result_img, (x, y), (x + wb, y + hb), (0, 0, 255), 3)
 
@@ -127,20 +125,19 @@ def compare_images(img_path1, img_path2, use_auto_crop=False):
     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], result_filename), result_img)
     return result_filename
 
-# --- ルーティング ---
-
 @app.route('/', methods=['GET'])
 def intro():
-    # 紹介ページを表示
+    """紹介ページを表示"""
     return render_template('intro.html')
 
 @app.route('/main', methods=['GET'])
 def index():
-    # メインの判定ページを表示
+    """メイン判定ページを表示"""
     return render_template('index.html')
 
 @app.route('/compare', methods=['POST'])
 def compare():
+    """比較実行リクエストの処理"""
     data = request.get_json()
     use_auto_crop = data.get('use_auto_crop', False)
     p1 = save_b64_image(data.get('image1_b64'), app.config['UPLOAD_FOLDER'])
@@ -151,10 +148,13 @@ def compare():
     return jsonify({'result_image': f"/static/uploads/{res}"})
 
 def save_b64_image(b64, folder):
+    """Base64形式の画像を保存"""
     data = base64.b64decode(b64.split(",")[1])
     path = os.path.join(folder, f"{uuid.uuid4()}.png")
     with open(path, "wb") as f: f.write(data)
     return path
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # ポート設定を環境変数から取得（デプロイ用）
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
