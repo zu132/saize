@@ -51,7 +51,6 @@ def auto_rectify(image):
     return image
 
 def compare_images(img_path1, img_path2, use_auto_crop=False):
-    # --- パラメータ設定 (元の設定を維持) ---
     DILATE_AFTER_OPENING = True
     OPENING_KERNEL_SIZE = 3
     OPENING_ITERATIONS = 1
@@ -64,20 +63,15 @@ def compare_images(img_path1, img_path2, use_auto_crop=False):
     RANSAC_REPROJ_THRESHOLD = 3.0
     DIFF_THRESHOLD = 30
 
-    # 1. 画像の読み込み
     img1 = cv2.imread(img_path1)
     img2 = cv2.imread(img_path2)
 
-    # --- 2. [追加] オートクロップ（台形補正）の適用 ---
     if use_auto_crop:
-        print("オートクロップを実行します...")
         img1 = auto_rectify(img1)
         img2 = auto_rectify(img2)
 
-    # --- 3. 元の位置合わせロジック (ORBマッチング) を復元 ---
     img1_gray = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
     img2_gray = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
-    
     img_to_compare1 = img1
     img_to_compare2 = None
 
@@ -96,13 +90,11 @@ def compare_images(img_path1, img_path2, use_auto_crop=False):
             h_matrix, _ = cv2.findHomography(dst_pts, src_pts, cv2.RANSAC, RANSAC_REPROJ_THRESHOLD)
             h, w = img1_gray.shape
             img_to_compare2 = cv2.warpPerspective(img2, h_matrix, (w, h))
-            print("ORB位置合わせに成功しました。")
         else:
             img_to_compare2 = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
     except:
         img_to_compare2 = cv2.resize(img2, (img1.shape[1], img1.shape[0]))
 
-    # --- 4. 判定ロジック (従来の方法) ---
     gray1 = cv2.cvtColor(img_to_compare1, cv2.COLOR_BGR2GRAY)
     gray2 = cv2.cvtColor(img_to_compare2, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(cv2.GaussianBlur(gray1, (5, 5), 0), cv2.GaussianBlur(gray2, (5, 5), 0))
@@ -135,8 +127,17 @@ def compare_images(img_path1, img_path2, use_auto_crop=False):
     cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], result_filename), result_img)
     return result_filename
 
-@app.route('/')
-def index(): return render_template('index.html')
+# --- ルーティング ---
+
+@app.route('/', methods=['GET'])
+def intro():
+    # 紹介ページを表示
+    return render_template('intro.html')
+
+@app.route('/main', methods=['GET'])
+def index():
+    # メインの判定ページを表示
+    return render_template('index.html')
 
 @app.route('/compare', methods=['POST'])
 def compare():
@@ -155,4 +156,5 @@ def save_b64_image(b64, folder):
     with open(path, "wb") as f: f.write(data)
     return path
 
-if __name__ == '__main__': app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True)

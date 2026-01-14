@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>間違い探し粛清ソリューション</title>
+    <title>メイン | 間違い探し粛清ソリューション</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
@@ -13,6 +13,25 @@
       rel="stylesheet"
     />
     <style>
+      /* 投票ボタンのスタイル */
+      .vote-btn {
+        position: absolute;
+        top: 50%;
+        right: 2rem;
+        transform: translateY(-50%);
+        background-color: #ffc107;
+        color: #1b5e20;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+      }
+      .vote-btn:hover {
+        background-color: #e0a800;
+      }
+
       .modal {
         display: none;
         position: fixed;
@@ -79,6 +98,12 @@
         object-fit: contain;
       }
       @media (max-width: 600px) {
+        .vote-btn {
+          position: static;
+          display: inline-block;
+          margin-top: 10px;
+          transform: none;
+        }
         .image-upload-wrapper {
           flex-direction: column;
         }
@@ -89,9 +114,14 @@
     </style>
   </head>
   <body>
-    <header>
+    <header style="position: relative">
       <h1>間違い探し粛清ソリューション</h1>
-      <p>画像を撮影して、最大の四角形を自動検出＆補正します。</p>
+      <p>2枚の画像をセットして「比較実行」を押してください。</p>
+      <a
+        href="https://docs.google.com/forms/d/e/1FAIpQLSeY43W6nd3n1H7E1WFdpJ7HP0WcjCDGs1RYu8DmgaTEGE39hw/viewform?pli=1"
+        class="vote-btn"
+        >投票ボタン</a
+      >
     </header>
 
     <main class="container">
@@ -164,7 +194,7 @@
               id="auto-crop-check"
               style="transform: scale(1.2); margin-right: 8px"
             />
-            オートクロップを有効にする（カメラ用自動補正）
+            オートクロップを有効にする（自動ゆがみ補正）
           </label>
         </div>
 
@@ -172,9 +202,12 @@
       </form>
 
       <div id="result-container" class="result-container" style="display: none">
-        <h2>間違いを囲みました⭕</h2>
-        <div id="loading" style="display: none"><p>解析・補正中です...</p></div>
+        <h2>結果を表示中⭕</h2>
+        <div id="loading" style="display: none"><p>解析中です...</p></div>
         <div id="result"></div>
+        <div style="margin-top: 1rem; text-align: center">
+          <a href="/" style="color: #1b5e20">紹介ページに戻る</a>
+        </div>
       </div>
     </main>
 
@@ -186,7 +219,7 @@
           <button type="button" id="retake-btn" style="display: none">
             撮り直す
           </button>
-          <button type="button" id="crop-btn">トリミング確定</button>
+          <button type="button" id="crop-btn">確定</button>
         </div>
       </div>
     </div>
@@ -197,7 +230,7 @@
         <video id="camera-feed" autoplay style="width: 100%"></video>
         <div class="modal-buttons">
           <button type="button" id="cancel-camera-btn">キャンセル</button>
-          <button type="button" id="shutter-btn">撮影する</button>
+          <button type="button" id="shutter-btn">撮影</button>
         </div>
         <canvas id="camera-canvas" style="display: none"></canvas>
       </div>
