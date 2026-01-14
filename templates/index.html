@@ -13,7 +13,6 @@
       rel="stylesheet"
     />
     <style>
-      /* モーダル用のスタイルを追加 */
       .modal {
         display: none;
         position: fixed;
@@ -42,28 +41,16 @@
       #cropping-image {
         max-width: 100%;
         max-height: 65vh;
-        width: auto;
-        height: auto;
-        object-fit: contain;
-      }
-      #camera-modal-content video {
-        max-width: 100%;
-        max-height: 65vh;
         object-fit: contain;
       }
       .modal-content button {
         margin-top: 15px;
         padding: 8px 20px;
-        font-size: 1rem;
-        cursor: pointer;
         background-color: #4a90e2;
         color: white;
         border: none;
         border-radius: 4px;
-        transition: background-color 0.3s;
-      }
-      .modal-content button:hover {
-        background-color: #357abd;
+        cursor: pointer;
       }
       .modal-buttons {
         display: flex;
@@ -71,118 +58,40 @@
         justify-content: center;
         margin-top: 1rem;
       }
-      .modal-buttons button {
-        padding: 0.5rem 1rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1rem;
+      .toggle-box {
+        margin: 15px 0;
+        background: #eef7ff;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #4a90e2;
+        text-align: center;
       }
-      #shutter-btn {
-        background-color: #4a90e2;
-        color: white;
-        border-color: #357abd;
-      }
-      #cancel-camera-btn {
-        background-color: #fff;
-        color: #666;
-      }
-
-      /* レスポンシブ対応 */
-      @media (max-width: 600px) {
-        header h1 {
-          font-size: 1.8rem;
-        }
-        header p {
-          font-size: 1rem;
-        }
-        .image-upload-wrapper {
-          flex-direction: column;
-          align-items: center;
-        }
-        .image-input-container {
-          margin-bottom: 2rem;
-          width: 100%;
-        }
-        .image-preview-box {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 200px;
-        }
-        .image-preview {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
-        }
-        .modal-content {
-          width: 95%;
-          padding: 10px;
-        }
-        .modal-content button {
-          padding: 6px 15px;
-          font-size: 0.9rem;
-        }
-        .modal-buttons {
-          flex-direction: column;
-          gap: 0.5rem;
-        }
-        #camera-modal-content video {
-          max-height: 50vh;
-        }
-        #cropping-image {
-          max-height: 50vh;
-        }
-      }
-
-      /* 結果表示用スタイル */
       .result-display-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
         margin-top: 1rem;
       }
-      @media (max-width: 600px) {
-        .result-display-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-      .result-column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
       .result-column img {
         width: 100%;
-        height: auto;
-        max-height: 250px;
         border: 1px solid #ccc;
         border-radius: 4px;
         object-fit: contain;
       }
       @media (max-width: 600px) {
-        .result-column img {
-          max-height: 150px;
+        .image-upload-wrapper {
+          flex-direction: column;
         }
-      }
-      .result-final img {
-        border-color: #4a90e2;
-      }     
-
-      /* コンテナの幅制限 */
-      .image-upload-wrapper,
-      .result-container {
-        max-width: 700px;
-        margin: 0 auto;
+        .result-display-grid {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
   <body>
     <header>
       <h1>間違い探し粛清ソリューション</h1>
-      <p>
-        2枚の画像を「アップロード」または「カメラで撮影」して、違いを見つけましょう。
-      </p>
+      <p>画像を撮影して、最大の四角形を自動検出＆補正します。</p>
     </header>
 
     <main class="container">
@@ -195,7 +104,6 @@
                 id="preview1"
                 class="image-preview"
                 src="https://via.placeholder.com/300x200.png?text=画像1"
-                alt="画像1プレビュー"
               />
             </div>
             <div class="action-buttons">
@@ -205,7 +113,7 @@
                 data-target="1"
                 data-action="upload"
               >
-                デバイスから選択
+                デバイス選択
               </button>
               <button
                 type="button"
@@ -213,10 +121,10 @@
                 data-target="1"
                 data-action="camera"
               >
-                カメラで撮影
+                カメラ撮影
               </button>
             </div>
-            <input type="hidden" name="image1_b64" id="image1_b64" />
+            <input type="hidden" id="image1_b64" />
           </div>
           <div class="image-input-container">
             <h3>画像2</h3>
@@ -225,7 +133,6 @@
                 id="preview2"
                 class="image-preview"
                 src="https://via.placeholder.com/300x200.png?text=画像2"
-                alt="画像2プレビュー"
               />
             </div>
             <div class="action-buttons">
@@ -235,7 +142,7 @@
                 data-target="2"
                 data-action="upload"
               >
-                デバイスから選択
+                デバイス選択
               </button>
               <button
                 type="button"
@@ -243,18 +150,30 @@
                 data-target="2"
                 data-action="camera"
               >
-                カメラで撮影
+                カメラ撮影
               </button>
             </div>
-            <input type="hidden" name="image2_b64" id="image2_b64" />
+            <input type="hidden" id="image2_b64" />
           </div>
         </div>
+
+        <div class="toggle-box">
+          <label style="cursor: pointer; font-weight: bold">
+            <input
+              type="checkbox"
+              id="auto-crop-check"
+              style="transform: scale(1.2); margin-right: 8px"
+            />
+            オートクロップを有効にする（カメラ用自動補正）
+          </label>
+        </div>
+
         <button type="submit" class="submit-btn">比較実行</button>
       </form>
 
       <div id="result-container" class="result-container" style="display: none">
         <h2>間違いを囲みました⭕</h2>
-        <div id="loading" style="display: none"><p>処理中です...</p></div>
+        <div id="loading" style="display: none"><p>解析・補正中です...</p></div>
         <div id="result"></div>
       </div>
     </main>
@@ -262,9 +181,7 @@
     <div id="cropping-modal" class="modal">
       <div class="modal-content">
         <h2>画像をトリミング</h2>
-        <div>
-          <img id="cropping-image" src="" />
-        </div>
+        <div><img id="cropping-image" src="" /></div>
         <div class="modal-buttons">
           <button type="button" id="retake-btn" style="display: none">
             撮り直す
@@ -275,9 +192,9 @@
     </div>
 
     <div id="camera-modal" class="modal">
-      <div class="modal-content" id="camera-modal-content">
-        <h2>カメラで撮影</h2>
-        <video id="camera-feed" autoplay></video>
+      <div class="modal-content">
+        <h2>カメラ撮影</h2>
+        <video id="camera-feed" autoplay style="width: 100%"></video>
         <div class="modal-buttons">
           <button type="button" id="cancel-camera-btn">キャンセル</button>
           <button type="button" id="shutter-btn">撮影する</button>
@@ -289,202 +206,122 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // 【2-1. グローバル変数とDOM要素の取得】
-        let cropper;
-        let currentTargetIndex; // '1' or '2'
-        let image1AspectRatio; // 画像1のアスペクト比を保持する変数
-
-        // ファイル入力用の隠しinput要素
+        let cropper, currentTargetIndex, image1AspectRatio;
         const fileInput = document.createElement("input");
         fileInput.type = "file";
         fileInput.accept = "image/*";
-
-        // DOM要素
         const croppingModal = document.getElementById("cropping-modal");
         const cameraModal = document.getElementById("camera-modal");
-        const cropBtn = document.getElementById("crop-btn");
-        const retakeBtn = document.getElementById("retake-btn");
-        const shutterBtn = document.getElementById("shutter-btn");
-        const cancelCameraBtn = document.getElementById("cancel-camera-btn");
         const video = document.getElementById("camera-feed");
         const canvas = document.getElementById("camera-canvas");
 
-        // 【2-2. イベントリスナーの設定】
-        // 「デバイスから選択」「カメラで撮影」ボタンの処理
-        document.querySelectorAll(".btn-select").forEach((button) => {
-          button.addEventListener("click", (e) => {
+        document.querySelectorAll(".btn-select").forEach((btn) => {
+          btn.onclick = (e) => {
             currentTargetIndex = e.target.dataset.target;
-            const action = e.target.dataset.action;
-            if (action === "upload") {
-              fileInput.click();
-            } else if (action === "camera") {
-              startCamera();
-            }
-          });
+            if (e.target.dataset.action === "upload") fileInput.click();
+            else startCamera();
+          };
         });
 
-        // ファイルが選択された時の処理
-        fileInput.addEventListener("change", (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-              showCroppingModal(event.target.result);
-            };
-            reader.readAsDataURL(file);
-          }
-          fileInput.value = ""; // 同じファイルを連続で選択できるようにリセット
-        });
+        fileInput.onchange = (e) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => showCroppingModal(ev.target.result);
+          reader.readAsDataURL(e.target.files[0]);
+          fileInput.value = "";
+        };
 
-        // カメラのキャンセルボタンの処理
-        cancelCameraBtn.addEventListener("click", () => {
-          stopCamera();
-        });
-
-        // 撮り直すボタンの処理
-        retakeBtn.addEventListener("click", () => {
-          croppingModal.style.display = "none";
-          if (cropper) {
-            cropper.destroy();
-          }
-          startCamera();
-        });
-
-        // カメラ撮影ボタンの処理
-        shutterBtn.addEventListener("click", () => {
-          const context = canvas.getContext("2d");
+        document.getElementById("shutter-btn").onclick = () => {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageDataUrl = canvas.toDataURL("image/jpeg");
+          canvas.getContext("2d").drawImage(video, 0, 0);
           stopCamera();
-          showCroppingModal(imageDataUrl, true);
-        });
+          showCroppingModal(canvas.toDataURL("image/jpeg"), true);
+        };
 
-        // トリミング確定ボタンの処理
-        cropBtn.addEventListener("click", () => {
+        document.getElementById("crop-btn").onclick = () => {
           if (!cropper) return;
-
-          const croppedCanvas = cropper.getCroppedCanvas();
-          const croppedImageDataUrl = croppedCanvas.toDataURL("image/png");
-
-          // プレビューと隠しフィールドに設定
+          const croppedUrl = cropper.getCroppedCanvas().toDataURL("image/png");
           document.getElementById(`preview${currentTargetIndex}`).src =
-            croppedImageDataUrl;
+            croppedUrl;
           document.getElementById(`image${currentTargetIndex}_b64`).value =
-            croppedImageDataUrl;
-
-          // 画像1ならアスペクト比を保存
+            croppedUrl;
           if (currentTargetIndex === "1") {
             const cropData = cropper.getData();
             image1AspectRatio = cropData.width / cropData.height;
           }
-
           croppingModal.style.display = "none";
           cropper.destroy();
-        });
+        };
 
-        // フォーム送信処理
-        document
-          .getElementById("compareForm")
-          .addEventListener("submit", async (e) => {
-            e.preventDefault();
+        document.getElementById("compareForm").onsubmit = async (e) => {
+          e.preventDefault();
+          const img1 = document.getElementById("image1_b64").value;
+          const img2 = document.getElementById("image2_b64").value;
+          const useAutoCrop =
+            document.getElementById("auto-crop-check").checked;
 
-            const image1_b64 = document.getElementById("image1_b64").value;
-            const image2_b64 = document.getElementById("image2_b64").value;
-
-            if (!image1_b64 || !image2_b64) {
-              alert("画像1と画像2の両方を選択してください。");
-              return;
-            }
-
-            document.getElementById("loading").style.display = "block";
-            document.getElementById("result").innerHTML = "";
-
-            try {
-              const response = await fetch("/compare", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image1_b64, image2_b64 }),
-              });
-              const data = await response.json();
-
-              // 結果コンテナを表示
-              const resultContainer =
-                document.getElementById("result-container");
-              resultContainer.style.display = "block";
-
-              if (data.result_image) {
-                document.getElementById("result").innerHTML = `
-                  <div class="result-display-grid">
-                    <div class="result-column result-final">
-                      <h3>検出結果（左：画像1ベース）</h3>
-                      <img src="${data.result_image}" alt="比較結果">
-                    </div>
-                    <div class="result-column">
-                      <h3>画像2（右）</h3>
-                      <img src="${
-                        document.getElementById("preview2").src
-                      }" alt="画像2">
-                    </div>
-                  </div>`;
-              } else {
-                document.getElementById(
-                  "result"
-                ).innerHTML = `<p>エラー: ${data.error}</p>`;
-              }
-            } catch (error) {
-              document.getElementById(
-                "result"
-              ).innerHTML = `<p>通信エラーが発生しました。</p>`;
-            } finally {
-              document.getElementById("loading").style.display = "none";
-            }
-          });
-
-        // 【2-3. 各種制御関数】
-        function startCamera() {
-          navigator.mediaDevices
-            .getUserMedia({ video: true, audio: false })
-            .then((stream) => {
-              video.srcObject = stream;
-              cameraModal.style.display = "flex";
-            })
-            .catch((err) => alert("カメラへのアクセスに失敗しました。"));
-        }
-
-        function stopCamera() {
-          if (video.srcObject) {
-            video.srcObject.getTracks().forEach((track) => track.stop());
+          if (!img1 || !img2) return alert("画像を選んでください");
+          document.getElementById("loading").style.display = "block";
+          try {
+            const res = await fetch("/compare", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                image1_b64: img1,
+                image2_b64: img2,
+                use_auto_crop: useAutoCrop,
+              }),
+            });
+            const data = await res.json();
+            document.getElementById("result-container").style.display = "block";
+            if (data.result_image) {
+              document.getElementById("result").innerHTML = `
+                <div class="result-display-grid">
+                  <div class="result-column"><h3>検出結果</h3><img src="${
+                    data.result_image
+                  }"></div>
+                  <div class="result-column"><h3>画像2</h3><img src="${
+                    document.getElementById("preview2").src
+                  }"></div>
+                </div>`;
+            } else alert(data.error);
+          } finally {
+            document.getElementById("loading").style.display = "none";
           }
+        };
+
+        function startCamera() {
+          navigator.mediaDevices.getUserMedia({ video: true }).then((s) => {
+            video.srcObject = s;
+            cameraModal.style.display = "flex";
+          });
+        }
+        function stopCamera() {
+          if (video.srcObject)
+            video.srcObject.getTracks().forEach((t) => t.stop());
           cameraModal.style.display = "none";
         }
-
-        function showCroppingModal(imageDataUrl, isFromCamera = false) {
-          const image = document.getElementById("cropping-image");
-          image.src = imageDataUrl;
+        function showCroppingModal(url, cam = false) {
+          const img = document.getElementById("cropping-image");
+          img.src = url;
           croppingModal.style.display = "flex";
-          // カメラからの場合のみ撮り直すボタンを表示
-          retakeBtn.style.display = isFromCamera ? "inline-block" : "none";
-
-          // Cropper.jsのオプションを設定
-          let cropperOptions = {
+          document.getElementById("retake-btn").style.display = cam
+            ? "inline-block"
+            : "none";
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(img, {
             viewMode: 1,
-            background: false,
-          };
-
-          // 画像2の時、かつ画像1のアスペクト比が保存されている場合
-          if (currentTargetIndex === "2" && image1AspectRatio) {
-            cropperOptions.aspectRatio = image1AspectRatio;
-          } else {
-            cropperOptions.aspectRatio = NaN; // 自由な比率
-          }
-
-          if (cropper) {
-            cropper.destroy();
-          }
-          cropper = new Cropper(image, cropperOptions);
+            aspectRatio:
+              currentTargetIndex === "2" && image1AspectRatio
+                ? image1AspectRatio
+                : NaN,
+          });
         }
+        document.getElementById("cancel-camera-btn").onclick = stopCamera;
+        document.getElementById("retake-btn").onclick = () => {
+          croppingModal.style.display = "none";
+          startCamera();
+        };
       });
     </script>
   </body>
